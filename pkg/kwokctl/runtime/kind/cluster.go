@@ -1055,7 +1055,8 @@ func (c *Cluster) Up(ctx context.Context) error {
 	kubeconfigPath := c.GetWorkdirPath(runtime.InHostKubeconfigName)
 
 	kubeconfigBuf := bytes.NewBuffer(nil)
-	err = c.Kubectl(exec.WithWriteTo(ctx, kubeconfigBuf), "config", "view", "--minify=true", "--raw=true")
+	clusterContextArg := "--context=kind-" + c.Name()
+	err = c.Kubectl(exec.WithWriteTo(ctx, kubeconfigBuf), "config", "view", "--minify=true", "--raw=true", clusterContextArg)
 	if err != nil {
 		return err
 	}
@@ -1066,7 +1067,7 @@ func (c *Cluster) Up(ctx context.Context) error {
 	}
 
 	// Cordoning the node to prevent fake pods from being scheduled on it
-	err = c.Kubectl(ctx, "cordon", c.getClusterName())
+	err = c.Kubectl(ctx, "cordon", c.getClusterName(), clusterContextArg)
 	if err != nil {
 		logger.Error("Failed cordon node", err)
 	}
